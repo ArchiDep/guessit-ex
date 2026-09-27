@@ -85,15 +85,18 @@ app.get('/', async (req, res, next) => {
     // not running, the page is shown anyway and the error is printed in the
     // terminal. This way, the application can start without a database.
     let leaderboard = [];
+    let totalGames = 0;
     let loaded = true;
     try {
       leaderboard = (await db.query(leaderboardQuery)).rows;
+      // The total number of games ever started, won or not.
+      totalGames = (await db.query('SELECT count(*)::int AS total FROM game')).rows[0].total;
     } catch (err) {
       console.error('Could not load the leaderboard:', err);
       loaded = false;
     }
 
-    res.send(renderHome(leaderboard, loaded));
+    res.send(renderHome(leaderboard, totalGames, loaded));
   } catch (err) {
     next(err);
   }
@@ -276,7 +279,7 @@ function layout(title, body) {
 </html>`;
 }
 
-function renderHome(leaderboard, loaded) {
+function renderHome(leaderboard, totalGames, loaded) {
   const rows = leaderboard
     .map((game, i) => {
       const rank = i + 1;
@@ -297,6 +300,10 @@ function renderHome(leaderboard, loaded) {
   } else {
     board = `<p class="text-muted text-center my-4">No games won yet. Be the first!</p>`;
   }
+
+  const total = loaded
+    ? `<p class="text-muted text-center small mt-3 mb-0">${totalGames.toLocaleString('en-US')} ${totalGames === 1 ? 'game' : 'games'} played in total</p>`
+    : '';
 
   return layout(
     'Guess It',
@@ -320,6 +327,7 @@ function renderHome(leaderboard, loaded) {
       <div class="card-body">
         <h2 class="h5 mb-3">🏆 Leaderboard <small class="text-muted">— fewest tries wins</small></h2>
         ${board}
+        ${total}
       </div>
     </div>`
   );
