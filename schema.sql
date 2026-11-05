@@ -16,7 +16,7 @@
 --
 --   postgresql://guessit:pass%20word@localhost:5432/guessit
 
-CREATE USER guessit WITH PASSWORD 'change-me-now';
+CREATE USER guessit WITH PASSWORD d829621e155564171dd440da68a2d9aa;
 
 CREATE DATABASE guessit OWNER guessit;
 
